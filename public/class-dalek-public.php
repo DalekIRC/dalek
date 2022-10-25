@@ -113,8 +113,12 @@ class Dalek_Public {
 	public function add_admin_pages()
 	{
 		add_menu_page('DalekIRC', 'IRC', 'manage_options', 'dalek_plugin', [$this, 'admin_index'], 'dashicons-networking', 10);
+		
 	}
-
+	public function add_widget()
+	{
+		register_widget( 'Dalek_Widget' );
+	}
 	public function admin_index()
 	{
 		require_once plugin_dir_path(__FILE__).'templates/admin.php';

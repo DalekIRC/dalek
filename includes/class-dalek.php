@@ -173,6 +173,8 @@ class Dalek {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_public, 'add_admin_pages');
+		$this->loader->add_action( 'widgets_init', $plugin_public, 'add_widget');
+
 		$this->loader->add_filter( 'plugin_action_links_'.plugin_basename(__FILE__), $plugin_public, 'settings_link');
 	}
 
@@ -216,6 +218,48 @@ class Dalek {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	public static function do_rehash($name)
+	{
+		$name = base64_decode($name);
+		$data = '{
+			"id": 3244,
+			"jsonrpc": "2.0",
+			"method": "rehash",
+			"params": {"server": "'.$name.'"}
+		}';
+		$resp = json_decode(self::rpc_query($data), true);
+		if (isset($resp['result']) && $resp['result'] == "Success")
+		dalek_print_notification("Successfully rehashed: $name");
+	}
+
+	public static function rpc_query($data = NULL)
+	{
+		if (!$data)
+			return;
+		$url = "http://localhost:1024/api";
+
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+		$headers = array(
+			"Accept: application/json",
+			"Content-Type: application/json",
+		);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
+		//for debug only!
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+		$resp = curl_exec($curl);
+		curl_close($curl);
+		return $resp;
 	}
 
 }

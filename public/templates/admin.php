@@ -1,10 +1,14 @@
-
-
 <?php
 
-use WPMailSMTP\Vendor\phpseclib3\Common\Functions\Strings;
-
 global $wpdb;
+
+
+if (isset($_POST))
+{
+    foreach($_POST as $key => $value)
+        if ($value == "Rehash")
+            Dalek::do_rehash($key);
+}
 
 class TKL {
     static $list = [];
@@ -48,6 +52,12 @@ foreach(Dalek_UserList::$list as $user)
 
 dalek_generate_brief();
 
+function dalek_print_notification(...$lines)
+{
+    ?>
+        <p class="notification"><?php foreach ($lines as $line) echo $line."<br>"; ?></p>
+    <?php
+}
 function dalek_generate_brief()
 {
     echo "<h1>Dalek IRC Services</h1>
@@ -295,7 +305,9 @@ function show_servers()
     {
         ?>
         <tr>
-            <td><?php echo $serv->servername; ?></td>
+            <td>
+                <form method="post">
+                <input type="submit" onclick="return  confirm('Are you sure you want to rehash <?php echo $serv->servername; ?>?')" name="<?php echo base64_encode($serv->servername); ?>" value="Rehash"></input></form><?php echo $serv->servername; ?></td>
             <td><?php echo dalek_get_server_version($serv->sid); ?></td>
             <td><?php echo $serv->version; ?></td>
             <td><?php echo gmdate("F j, Y, g:i a", dalek_get_umeta($serv->sid, "creationtime")); ?></td>
@@ -417,4 +429,6 @@ function show_bans()
         <?php show_users(1); ?>
     </div>
 </div>
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
