@@ -112,15 +112,56 @@ class Dalek_Public {
 	}
 	public function add_admin_pages()
 	{
-		add_menu_page('DalekIRC', 'IRC', 'manage_options', 'dalek_plugin', [$this, 'admin_index'], 'dashicons-networking', 10);
+		add_menu_page('DalekIRC', 'IRC Overview', 'manage_options', 'dalek_plugin', [$this, 'irc_overview'], 'dashicons-networking', 10);
+		add_submenu_page('dalek_plugin', 'Users Manager', 'Users', 'manage_options', 'dalek_users', [$this, 'information_view']);
+		add_submenu_page('dalek_plugin', 'Channels Manager', 'Channels', 'manage_options', 'dalek_channels', [$this, 'test']);
+		add_submenu_page('dalek_plugin', 'UnrealIRCd Manager', 'UnrealIRCd', 'manage_options', 'dalek_unreal', [$this, 'test']);
 		
 	}
 	public function add_widget()
 	{
 		register_widget( 'Dalek_Widget' );
 	}
-	public function admin_index()
+	public function irc_overview()
 	{
-		require_once plugin_dir_path(__FILE__).'templates/admin.php';
+		require_once plugin_dir_path(__FILE__).'templates/overview.php';
+	}
+	public function information_view()
+	{
+		require_once plugin_dir_path(__FILE__).'templates/information.php';
+	}
+
+	public static function test()
+	{
+		echo "You what lad";
+	}
+	public function add_suspension_field($user)
+	{
+		// Only show this option to users who can delete other users
+		if (!current_user_can(is_multisite() ? 'manage_network_users' : 'edit_users'))
+			return;
+		?>
+		<table class="form-table">
+			<tbody><h2>Account Suspension</h2>
+				<tr>
+					<th>
+						<label for="dalek_suspend">Suspended</label>
+					</th>
+					<td>
+						<input type="checkbox" name="dalek_suspend" id="dalek_suspend" value="1" <?php checked(1, get_the_author_meta('dalek_suspended', $user->ID)); ?> />
+                        <label for="dalek_suspend"><span class="description">Check this to suspend the user.</span></label>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="dalek_suspend_reason">Reason</label>
+					</th>
+					<td>
+						<input type="input" name="dalek_suspend_reason" id="dalek_suspend_reason" value="No reason" <?php checked(1, get_the_author_meta('dalek_suspended_reason', $user->ID)); ?> />
+					</td>
+				</tr>
+			<tbody>
+		</table>
+		<?php
 	}
 }

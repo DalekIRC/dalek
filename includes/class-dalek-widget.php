@@ -1,5 +1,13 @@
 <?php
 
+class Dalek_UserList_Widget {
+    static $list = [];
+    static $usercount = 0;
+    static $servicescount = 0;
+    static $opercount = 0;
+    static $chancount = 0;
+	static $helpercount = 0;
+}
 class Dalek_Widget extends WP_Widget {
 
     /**
@@ -20,11 +28,35 @@ class Dalek_Widget extends WP_Widget {
      * @param array $instance
      */
     public function widget( $args, $instance ) {
+		global $wpdb;
 		echo $args['before_widget'];
 		if ( ! empty( $instance['title'] ) ) {
 			echo $args['before_title'] . apply_filters( 'widget_title', $instance['title'] ) . $args['after_title'];
 		}
-		echo esc_html__( 'Hello, World!', 'dalek_domain' );
+		Dalek_UserList_Widget::$list = $wpdb->get_results("SELECT * FROM dalek_user");
+		foreach(Dalek_UserList_Widget::$list as $user)
+		{
+			if (strpos($user->usermodes,"S") !== false)
+			{
+				++Dalek_UserList_Widget::$servicescount;
+				continue;
+			}
+			if (strpos($user->usermodes,"o") !== false)
+			{
+				++Dalek_UserList_Widget::$opercount;
+			}
+			if (strpos($user->usermodes,"h") !== false)
+			{
+				++Dalek_UserList_Widget::$helpercount;
+			}
+			++Dalek_UserList_Widget::$usercount;
+		}
+		?>
+		Online right now:<br>
+		<?php echo Dalek_UserList_Widget::$usercount; ?> users.<br>
+		<?php echo Dalek_UserList_Widget::$opercount; ?> opers.<br>
+		<?php echo Dalek_UserList_Widget::$helpercount; ?> supporters available for help.
+		<?php
 		echo $args['after_widget'];
 	}
 

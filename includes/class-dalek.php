@@ -13,6 +13,8 @@
  * @subpackage Dalek/includes
  */
 
+use WPMailSMTP\Vendor\phpseclib3\Common\Functions\Strings;
+
 /**
  * The core plugin class.
  *
@@ -176,6 +178,8 @@ class Dalek {
 		$this->loader->add_action( 'widgets_init', $plugin_public, 'add_widget');
 
 		$this->loader->add_filter( 'plugin_action_links_'.plugin_basename(__FILE__), $plugin_public, 'settings_link');
+
+		$this->loader->add_action( 'edit_user_profile', $plugin_public, 'add_suspension_field');
 	}
 
 	
@@ -220,20 +224,26 @@ class Dalek {
 		return $this->version;
 	}
 
+	/**
+	 * Send a rehash signal to services with a server name =]
+	 * JSON-RPC
+	 */
 	public static function do_rehash($name)
 	{
 		$name = base64_decode($name);
 		$data = '{
-			"id": 3244,
+			"id": '.rpc_id().',
 			"jsonrpc": "2.0",
 			"method": "rehash",
 			"params": {"server": "'.$name.'"}
 		}';
 		$resp = json_decode(self::rpc_query($data), true);
 		if (isset($resp['result']) && $resp['result'] == "Success")
-		dalek_print_notification("Successfully rehashed: $name");
+			dalek_print_notification("Successfully rehashed: $name");
 	}
-
+	/**
+	 * Query the Dalek RPC webserver 
+	 */
 	public static function rpc_query($data = NULL)
 	{
 		if (!$data)
@@ -262,4 +272,105 @@ class Dalek {
 		return $resp;
 	}
 
+	/**
+	 * Send a request to remove a TKL
+	 * JSON-RPC
+	 */
+	public static function tkl_remove($mask, $type)
+	{
+		$data = '{
+			"id": '.rpc_id().',
+			"jsonrpc": "2.0",
+			"method": "tkl.del",
+			"params": {"mask": "'.$mask.'", "type": "'.$type.'"}
+		}';
+		$resp = json_decode(self::rpc_query($data), true);
+		if (isset($resp['result']) && $resp['result'] == "Success")
+			dalek_print_notification("Successfully removed ban against $mask of type $type");
+		else
+			dalek_print_notification("An error occurred: ".$resp['error']['message']." (Code: ".$resp['error']['code'].")");
+	}
+
+	/**
+	 * Send oper to a nick
+	 */
+	public static function send_oper($nick)
+	{
+		$data = '{
+			"id": '.rpc_id().',
+			"jsonrpc": "2.0",
+			"method": "svso.add",
+			"params": {"user": "'.$nick.'"}
+		}';
+		$resp = json_decode(self::rpc_query($data), true);
+		if (isset($resp['result']) && $resp['result'] == "Success")
+			dalek_print_notification("Successfully set oper on $nick");
+		else
+			dalek_print_notification("An error occurred: ".$resp['error']['message']." (Code: ".$resp['error']['code'].")");
+	}
+	/**
+	 * Remove oper from a nick
+	 */
+	public static function del_oper($nick)
+	{
+		$data = '{
+			"id": '.rpc_id().',
+			"jsonrpc": "2.0",
+			"method": "svso.del",
+			"params": {"user": "'.$nick.'"}
+		}';
+		$resp = json_decode(self::rpc_query($data), true);
+		if (isset($resp['result']) && $resp['result'] == "Success")
+			dalek_print_notification("Successfully removed $nick's oper");
+		else
+			dalek_print_notification("An error occurred: ".$resp['error']['message']." (Code: ".$resp['error']['code'].")");
+	}
+
+	public static function convert_mode_to_word(String $modes) : String
+	{
+		$return = "";
+
+		if (!strlen($modes))
+			return $return;
+
+		for ($i = 0; isset($modes[$i]) && ($r = $modes[$i]); ++$i)
+		{
+			if ($r == "Y")
+				$return .= "OperJoin, ";
+
+			elseif ($r == "q")
+				$return .= "Owner, ";
+
+			elseif ($r == "a")
+				$return .= "Admin, ";
+
+			elseif ($r == "o")
+				$return .= "Operator, ";
+
+			elseif ($r == "h")
+				$return .= "Halfop, ";
+
+			elseif ($r == "v")
+				$return .= "Voice";
+			
+			else continue;
+		}
+
+		$return = rtrim($return,", ");
+		return $return;
+	}
 }
+
+
+
+/**
+ * Generate a random string for RPC IDs
+ */
+function rpc_id()
+{
+	$mt = microtime(false);
+	$mt = explode(" ",$mt);
+	$mt = $mt[1];
+	return (int)random_int(1111,399933) * $mt / 4;
+}
+

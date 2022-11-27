@@ -9,6 +9,7 @@
     padding-left: 5px;
     margin: 10px;
     border: #000;
+    border-radius: 25px;
 }
 .rehash_button {
     display: inline-flex;
@@ -56,6 +57,7 @@
     padding-left: 5px;
     margin: 10px;
     border: #000;
+    border-radius: 25px;
 }
 .active[data-tab-content] {
     display: block;
@@ -78,6 +80,8 @@ body {
 .tab {
     cursor: pointer;
     padding: 10px;
+    background: #D3D3D3;
+
 }
 
 .tab.active {
@@ -93,10 +97,12 @@ h2, h3 {
     padding: 0;
 }
 
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
+
+.dalektablethin {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    border-radius: 15px;
+    width: 100%;
 }
 
 td, th {
@@ -106,5 +112,18 @@ td, th {
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
+  background-color: #bec8d3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+    padding: 5px;
 }
