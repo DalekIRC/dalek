@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: (this should be a list of wordpress.org userid's)
+Contributors: Valware
 Donate link: https://https://github.com/ValwareIRC
 Tags: comments, spam
 Requires at least: 3.0.1
